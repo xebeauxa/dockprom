@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3.3'
 
 networks:
   monitor-net:
@@ -19,6 +19,8 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+    networks:
+      - monitor-net
     ports:
       - "80:80"
       - "8080:8080"
@@ -28,6 +30,8 @@ services:
   whoami:
     image: "containous/whoami"
     container_name: "simple-service"
+    networks:
+      - monitor-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.whoami.rule=Host(`aurelien.maison`)"
@@ -52,7 +56,10 @@ services:
     networks:
       - monitor-net
     labels:
-      org.label-schema.group: "monitoring"
+      - "org.label-schema.group=monitoring"
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.aurelien.maison`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
 
   alertmanager:
     image: prom/alertmanager:v0.21.0
@@ -123,7 +130,10 @@ services:
     networks:
       - monitor-net
     labels:
-      org.label-schema.group: "monitoring"
+      - "org.label-schema.group=monitoring"
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.aurelien.maison`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
 
   pushgateway:
     image: prom/pushgateway:v1.2.0
